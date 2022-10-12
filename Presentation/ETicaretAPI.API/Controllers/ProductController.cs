@@ -1,4 +1,5 @@
 ﻿using ETicaretAPI.Application.Abstract;
+using ETicaretAPI.Application.Repositories.ProductRepository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,20 +9,26 @@ namespace ETicaretAPI.API.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private readonly IProductService _productService;
+        private readonly IProductWriteRepository _productWriteRepository;
+        readonly private IProductReadRepository _productReadRepository;
 
-        public ProductController(IProductService productService)
+        public ProductController(IProductReadRepository productReadRepository, IProductWriteRepository productWriteRepository)
         {
-            _productService = productService;
+            _productReadRepository = productReadRepository;
+            _productWriteRepository = productWriteRepository;
         }
 
         [HttpGet]
-        public IActionResult GetProducts()
+        public async void Get()
         {
-            var products=_productService.GetProducts();
-            return Ok(products);
+           await  _productWriteRepository.AddRangeAsync(new()
+            {
+                new(){Id=Guid.NewGuid(),Name="Klavye",Price=100,CreatedDate=DateTime.UtcNow,Stock=10},
+                new(){Id=Guid.NewGuid(),Name="Mouse",Price=150,CreatedDate=DateTime.UtcNow,Stock=100},
+                new(){Id=Guid.NewGuid(),Name="Usb Bellek",Price=100,CreatedDate=DateTime.UtcNow,Stock=100},
+
+            });
+            var count=await _productWriteRepository.SaveAsync();
         }
-
-
     }
 }
